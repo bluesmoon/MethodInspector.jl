@@ -21,6 +21,8 @@ test_kw(a::Rational; c::Int=30, d::Float64=1., e::AbstractString="", f::Symbol=:
 
 test_opt_kw(a::Complex, b::Complex, c::Symbol = :c; d::Int=30, e::Float64=1., f::AbstractString="", g::Symbol=:a, h::Bool=false) = "2t_1o_5k"
 
+@testset "MethodInspector" begin
+
 @testset "Initializations" begin
     @test test_nokw() == "0_0k"
 
@@ -130,4 +132,6 @@ end
     @test [:a, :b,] == arg_names(methodswith(Float64, test_nokw))
     @test [:a, :b,] == arg_names(methodswith(Bool, test_nokw))
     @test [:a, :b,] == arg_names(methodswith(Unsigned, test_nokw))
+end
+
 end
