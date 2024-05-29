@@ -161,27 +161,17 @@ arg_types(foo)
 ```
 """
 function arg_types(mt::Method)
-    type_tuple = Base.arg_decl_parts(mt)
+    sig = Base.unwrap_unionall(mt.sig)
+    convert(Vector{Type}, map(sig.parameters[2:end]) do p
+        p = Base.unwrapva(Base.unwrap_unionall(p))
 
-    type_strings = map(x -> x[2], filter(x -> !isempty(x[1]), type_tuple[2]))
-    type_params  = type_tuple[1]
-
-    return convert(Vector{Type}, map(type_strings) do arg_type
-        if isempty(arg_type)
-            return Any
-        else
-            # Now replace any parameters that didn't have a parent type (i.e., were just Any)
-            for type_param in type_params
-                param = type_param.name
-                ub    = type_param.ub
-
-                arg_type = replace(arg_type, Regex("(?:<:)?\\b$(param)\\b") => "<:$(ub)")
-            end
-
-            return eval(Meta.parse(arg_type))
-        end
+        p.parameters = Core.svec(map(unwrap_typevar, p.parameters)...)
+        p
     end)
 end
 arg_types(mts::Union{Vector{Method},Base.MethodList}) = arg_types(first(mts))
+
+unwrap_typevar(x) = x
+unwrap_typevar(x::TypeVar) = unwrap_typevar(x.ub)
 
 end

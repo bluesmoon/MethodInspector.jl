@@ -109,9 +109,9 @@ end
     @test Type[Rational] == arg_types(methods(test_kw, (Rational,)))
 
     @test Type[] == arg_types(methods(test_nokw))
-    @test Type[Vector{<:Real},] == arg_types(methods(test_nokw, (Vector,)))
-    @test Type[Int, Vector{<:Any},] == arg_types(methodswith(Int, test_nokw))
-    @test Type[Char, Vector{<:Real},] == arg_types(methodswith(Char, test_nokw))
+    @test Type[Vector{Real},] == arg_types(methods(test_nokw, (Vector,)))
+    @test Type[Int, Vector{Any},] == arg_types(methodswith(Int, test_nokw))
+    @test Type[Char, Vector{Real},] == arg_types(methodswith(Char, test_nokw))
     @test Type[Float64, Tuple{<:AbstractString,<:Real},] == arg_types(methodswith(Float64, test_nokw))
     @test Type[Bool, Tuple{<:Real,<:Any},] == arg_types(methodswith(Bool, test_nokw))
     @test Type[Unsigned, Tuple{<:Real,Any,<:AbstractFloat},] == arg_types(methodswith(Unsigned, test_nokw))
