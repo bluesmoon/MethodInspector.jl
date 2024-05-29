@@ -31,27 +31,9 @@ kwarg_types(foo)
 ```
 """
 function kwarg_types(m::Method)
-    real_fn_ref = Base.uncompressed_ast(m).code
+    real_fn = Base.bodyfunction(m)
+    isnothing(real_fn) && return Type[]
 
-    if length(real_fn_ref) <= 1 || !isa(real_fn_ref[end-1].args[1] , GlobalRef)
-        # This method does not have kwargs
-        return Type[]
-    end
-
-    if VERSION < v"1.10" || real_fn_ref[end-1].args[1].name != :_apply_iterate
-        real_fn_ref = real_fn_ref[end-1].args
-    end
-
-    arg_idx = findfirst(a -> GlobalRef == typeof(a) && a.mod == m.module, real_fn_ref)
-
-    if isnothing(arg_idx)
-        @warn "Could not find $(m.name) in $(m.module)"
-        return Type[]
-    end
-
-    real_fn_ref = real_fn_ref[arg_idx]
-
-    real_fn = eval(real_fn_ref)
     real_mt = only(methods(real_fn))
 
     sig = Base.unwrap_unionall(real_mt.sig)
@@ -153,7 +135,7 @@ arg_names(foo)
 ```
 """
 arg_names(mts::Union{Vector{Method},Base.MethodList}) = arg_names(first(mts))
-arg_names(mt::Method)   = Base.method_argnames(mt)[2:end]
+arg_names(mt::Method) = Base.method_argnames(mt)[2:end]
 
 
 
