@@ -71,11 +71,7 @@ end
     @test kwarg_names(methods(test_kw, (Bool,))) == Symbol[:b]
     @test kwarg_names(methods(test_kw, (Char,))) == Symbol[:b]
     @test kwarg_names(methods(test_kw, (Int64,))) == Symbol[]
-    if VERSION < v"1.10"
-        @test kwarg_names(methods(test_kw, (Float64,))) == Symbol[]
-    else
-        @test kwarg_names(methods(test_kw, (Float64,))) == Symbol[:...]
-    end
+    @test kwarg_names(methods(test_kw, (Float64,))) == Symbol[]
     @test kwarg_names(methods(test_kw, (Float64, Char))) == Symbol[:c]
     @test kwarg_names(methods(test_kw, (Complex,))) == Symbol[:c, Symbol("d...")]
     @test kwarg_names(methods(test_kw, (Type{Symbol("")},))) == Symbol[]
@@ -89,12 +85,7 @@ end
     @test Type[Int] == kwarg_types(methods(test_kw, (Char,)))
     @test Type[Int] == kwarg_types(methods(test_kw, (Float64, Char,)))
     @test Type[Int] == kwarg_types(methods(test_kw, (AbstractString,Vector,)))
-    typs = kwarg_types(methods(test_kw, (Complex,)))
-    if VERSION < v"1.10.3"
-        @test Type[Int, Any] == typs
-    else
-        @test all(Type[Int, Any] .>: typs)
-    end
+    @test all(Type[Int, Any] .>: kwarg_types(methods(test_kw, (Complex,))))
     @test Type[Int, Float64, AbstractString, Symbol, Bool, Bool] == kwarg_types(methods(test_kw, (Symbol,)))
     @test all(Type[Int, Float64, AbstractString, Symbol, Bool, Bool, Val, AbstractString] .>: kwarg_types(methods(test_kw, (Rational,))))
 end
