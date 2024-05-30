@@ -165,8 +165,7 @@ function _params2vec(params::Core.SimpleVector)
     convert(Vector{Type}, map(params) do p
         p = unwrap_typevar(Base.unwrapva(Base.unwrap_unionall(p)))
 
-        p.parameters = Core.svec(map(unwrap_typevar, p.parameters)...)
-        p
+        return isempty(p.parameters) ? p : p.name.wrapper{map(unwrap_typevar, p.parameters)...}
     end)
 end
 

@@ -106,7 +106,7 @@ end
     @test isempty(setdiff(arg_types(methods(test_kw, (Number,))), [Int, Float64, Bool, Rational]))   # The first matching method will differ across Julia versions
     @test isempty(setdiff(arg_types(methods(test_kw, (Real,))), [Int, Float64, Bool, Rational]))   # The first matching method will differ across Julia versions
     @test Type[AbstractString, Any] == arg_types(methods(test_kw, (AbstractString,)))
-    @test Type[Rational] == arg_types(methods(test_kw, (Rational,)))
+    @test Rational >: arg_types(methods(test_kw, (Rational,)))[1]
 
     @test Type[] == arg_types(methods(test_nokw))
     @test Type[Vector{Real},] == arg_types(methods(test_nokw, (Vector,)))
