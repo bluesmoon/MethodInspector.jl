@@ -33,19 +33,13 @@ kwarg_names(methods(foo, (Int,), MyModule))
 ```
 """
 function kwarg_names(m::Method)
-    kwargs = Base.kwarg_decl(m)
+    real_fn = Base.bodyfunction(m)
+    isnothing(real_fn) && return Symbol[]
 
-    if isa(kwargs, Vector) && length(kwargs) > 0
-        kwargs = filter(!occursin("#") ∘ string, kwargs)
+    kwargs = arg_names(methods(real_fn))
+    delimiter = something(findfirst(==(Symbol("")), kwargs), length(kwargs)+1)
 
-        # Keywords *may* not be sorted correctly. We move the vararg one to the end.
-        index = something(findfirst(arg -> endswith(string(arg), "..."), kwargs), 0)
-        if index > 0
-            kwargs[index], kwargs[end] = kwargs[end], kwargs[index]
-        end
-    end
-
-    return kwargs
+    return kwargs[1:delimiter-1]
 end
 function kwarg_names(mts::Union{Vector{Method},Base.MethodList})
     for m in mts
