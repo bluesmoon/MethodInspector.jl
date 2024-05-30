@@ -13,7 +13,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     continue-on-error: ${{ matrix.experimental }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         version: ['1.6', '^1']
         experimental: [false]
