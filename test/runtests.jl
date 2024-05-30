@@ -63,7 +63,7 @@ end
     @test kwarg_names(methods(test_nokw)) == Symbol[]
 
     @test kwarg_names(methods(test_kw, (Symbol,)).ms[1]) == Symbol[:c, :d, :e, :f, :g, :h]
-    @test kwarg_names(methods(test_kw)) == Symbol[:c, :d, :e, :f, :g, :h, :i, :j]
+    @test kwarg_names(methods(test_kw)) == Symbol[:b]
 
     @test kwarg_names(methods(test_kw, (Symbol,))) == Symbol[:c, :d, :e, :f, :g, :h]
     @test kwarg_names(methods(test_kw, (Rational,))) == Symbol[:c, :d, :e, :f, :g, :h, :i, :j]

@@ -10,64 +10,14 @@ export
     arg_names
 
 """
-* `kwarg_types(::Method)` → `Type[]`
-
-Given a Method, return a list of types of the keyword warguments supported by that method.
-
-### Arguments
-
-`m::Method`
-: The method to check for `kwargs`
-
-### Returns
-
-A `Type` array of the kwarg types supported by method `m`. Arg names can be fetched using [`kwarg_names`](@ref). Both functions will
-return values in the same order. Methods that do not support `kwargs` will return an empty array.
-
-### Examples
-
-```julia
-kwarg_types(foo)
-```
-"""
-function kwarg_types(m::Method)
-    real_fn = Base.bodyfunction(m)
-    isnothing(real_fn) && return Type[]
-
-    real_mt = only(methods(real_fn))
-
-    sig = Base.unwrap_unionall(real_mt.sig)
-
-    last_param = findfirst(p -> p isa DataType && p.name == m.sig.parameters[1].name, sig.parameters)
-
-    params = collect(sig.parameters[2:last_param-1])
-
-    # Get rid of parameters from parameterized types
-    for i in 1:length(params)
-        while params[i] isa TypeVar
-            params[i] = params[i].ub
-        end
-    end
-
-    return Vector{Type}(params)
-end
-kwarg_types(m::Union{Vector{Method},Base.MethodList}) = kwarg_types(first(m.ms))
-
-
-"""
 * `kwarg_names(::Method)` → `Symbol[]`
-* `kwarg_names(::Base.MethodList)` → `Symbol[]`
 
 Given a method, return the names of all Keyword Arguments of that method.
-Alternately, given a MethodList, return the names all all keyword arguments accepted by the method that accepts the most keyword arguments.
 
 ### Arguments
 
 `m::Method`
 : The method to check for `kwargs`
-
-`mts::Base.MethodList`
-: A MethodList (returned by `methods(...)`) to search for keyword arguments.
 
 ### Returns
 
@@ -98,30 +48,23 @@ function kwarg_names(m::Method)
     return kwargs
 end
 function kwarg_names(mts::Union{Vector{Method},Base.MethodList})
-    potential_args = Symbol[]
-
-    for mt in mts
-        kwargs = kwarg_names(mt)
-
-        if length(kwargs) > length(potential_args)
-            potential_args = kwargs
+    for m in mts
+        if !isnothing(Base.bodyfunction(m))
+            return kwarg_names(m)
         end
     end
-
-    return potential_args
+    return Symbol[]
 end
 
 
 """
 * `arg_names(::Method)` → `Symbol[]`
-* `arg_names(::Base.MethodList)` → `Symbol[]`
 
 Given a method, return a list of args required by that method.
-If given a MethodList instead, use the first Method in that MethodList.
 
 ### Arguments
 
-`m::Base.MethodList|Method`
+`m::Method`
 : The Method or MethodList to check for `args`
 
 #### Returns
@@ -140,13 +83,56 @@ arg_names(mt::Method) = Base.method_argnames(mt)[2:end]
 
 
 """
+* `kwarg_types(::Method)` → `Type[]`
+
+Given a Method, return a list of types of the keyword warguments supported by that method.
+
+### Arguments
+
+`m::Method`
+: The method to check for `kwargs`
+
+### Returns
+
+A `Type` array of the kwarg types supported by method `m`. Arg names can be fetched using [`kwarg_names`](@ref). Both functions will
+return values in the same order. Methods that do not support `kwargs` will return an empty array.
+
+### Examples
+
+```julia
+kwarg_types(foo)
+```
+"""
+function kwarg_types(m::Method)
+    real_fn = Base.bodyfunction(m)
+    isnothing(real_fn) && return Type[]
+
+    real_mt = only(methods(real_fn))
+
+    sig = Base.unwrap_unionall(real_mt.sig)
+
+    last_param = findfirst(p -> p isa DataType && p.name == m.sig.parameters[1].name, sig.parameters)
+
+    _params2vec(sig.parameters[2:last_param-1])
+end
+function kwarg_types(mts::Union{Vector{Method},Base.MethodList})
+    for m in mts
+        if !isnothing(Base.bodyfunction(m))
+            return kwarg_types(m)
+        end
+    end
+    return Type[]
+end
+
+
+"""
 * `arg_types(::Method)` → `Type[]`
 
 Given a method, return the datatype of all its positional arguments.
 
 ### Arguments
 
-`m::Base.MethodList|Method`
+`m::Method`
 : The Method or MethodList to check for `args`
 
 ### Returns
@@ -162,16 +148,26 @@ arg_types(foo)
 """
 function arg_types(mt::Method)
     sig = Base.unwrap_unionall(mt.sig)
-    convert(Vector{Type}, map(sig.parameters[2:end]) do p
-        p = Base.unwrapva(Base.unwrap_unionall(p))
+
+    _params2vec(sig.parameters[2:end])
+end
+arg_types(mts::Union{Vector{Method},Base.MethodList}) = arg_types(first(mts))
+
+
+"""
+Unwrap a `TypeVar` into its upper type
+"""
+unwrap_typevar(x) = x
+unwrap_typevar(x::TypeVar) = unwrap_typevar(x.ub)
+
+
+function _params2vec(params::Core.SimpleVector)
+    convert(Vector{Type}, map(params) do p
+        p = unwrap_typevar(Base.unwrapva(Base.unwrap_unionall(p)))
 
         p.parameters = Core.svec(map(unwrap_typevar, p.parameters)...)
         p
     end)
 end
-arg_types(mts::Union{Vector{Method},Base.MethodList}) = arg_types(first(mts))
-
-unwrap_typevar(x) = x
-unwrap_typevar(x::TypeVar) = unwrap_typevar(x.ub)
 
 end
