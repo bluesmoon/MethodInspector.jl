@@ -4,7 +4,7 @@
 MethodInspector
 ```
 
-## Rules
+## Exported Functions
 ```@autodocs
 Modules=[MethodInspector]
 Order=[:function]
