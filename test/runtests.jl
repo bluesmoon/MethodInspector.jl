@@ -123,7 +123,7 @@ end
     @test Type[Signed, Signed, Any] == arg_types(methods(test_kw, (Signed,Signed,)))
 
     @test Type[] == arg_types(methods(test_nokw, tuple()))
-    @test Type[Vector{Real},] == arg_types(methods(test_nokw, (Vector,)))
+    @test Type[Vector{Real},] == arg_types(methods(test_nokw, (Vector{Real},)))
     @test Type[Int, Vector{Any},] == arg_types(methodswith(Int, test_nokw))
     @test Type[Char, Vector{Real},] == arg_types(methodswith(Char, test_nokw))
     @test Type[Float64, Tuple{<:AbstractString,<:Real},] == arg_types(methodswith(Float64, test_nokw))
