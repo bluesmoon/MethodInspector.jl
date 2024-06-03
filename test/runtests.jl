@@ -27,6 +27,10 @@ test_opt_kw(a::Complex, b::Complex, c::Symbol = :c; d::Int=30, e::Float64=1., f:
 
 test_ta_kw(; a::Vector{<:Real}=[1, 2, 3], b::Tuple{<:Real, <:T, V}=(1.0, -2, "Foo")) where { T <: Integer, V <: AbstractString} = "0vp_2ta_2kw"
 
+test_unionall_method(a::Vector{Tuple{T1, T2}}; b::D = String[], c::Union{AbstractString, Symbol} = "", d::Union{AbstractString, Symbol} = :x) where { T1<:Real, T2<:Real, D<:Union{AbstractString, Symbol, AbstractVector} } = "unionall"
+
+
+
 @testset "MethodInspector" begin
 
 @testset "Initializations" begin
@@ -89,6 +93,8 @@ end
     @test kwarg_names(methods(test_kw, (Unsigned,))) == Symbol[:d]
 
     @test kwarg_names(methods(test_ta_kw)) == [:a, :b]
+
+    @test [:b, :c, :d] == kwarg_names(methods(test_unionall_method))
 end
 
 @testset "kwarg_types" begin
@@ -110,6 +116,8 @@ end
     @test Type[Union{Vector{Real},Vector{AbstractString}}] == kwarg_types(methods(test_kw, (Unsigned,)))
 
     @test Type[Vector{Real}, Tuple{Real, Integer, AbstractString}] == kwarg_types(methods(test_ta_kw))
+
+    @test Type[Union{AbstractString, Symbol, AbstractVector{Any}}, Union{AbstractString, Symbol}, Union{AbstractString, Symbol}] == kwarg_types(methods(test_unionall_method))
 end
 
 @testset "arg_types" begin
@@ -135,6 +143,8 @@ end
     @test Type[Union{Vector{Complex{Real}},Vector{AbstractString}}] == arg_types(methods(test_nokw, (Vector{Complex},)))
 
     @test Type[] == arg_types(methods(test_ta_kw))
+
+    @test Type[Vector{Tuple{Real, Real}}] == arg_types(methods(test_unionall_method))
 end
 
 @testset "arg_names" begin
@@ -157,6 +167,8 @@ end
     @test [:a] == arg_names(methods(test_nokw, (Vector{Complex},)))
 
     @test Symbol[] == arg_names(methods(test_ta_kw))
+
+    @test [:a] == arg_names(methods(test_unionall_method))
 end
 
 end

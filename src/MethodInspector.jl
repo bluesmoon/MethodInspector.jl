@@ -103,9 +103,10 @@ function kwarg_types(m::Method)
 
     real_mt = only(methods(real_fn))
 
+    m_name = Base.unwrap_unionall(m.sig).parameters[1].name
     sig = Base.unwrap_unionall(real_mt.sig)
 
-    last_param = findfirst(p -> p isa DataType && p.name == m.sig.parameters[1].name, sig.parameters)
+    last_param = findfirst(p -> p isa DataType && p.name == m_name, sig.parameters)
 
     _params2vec(sig.parameters[2:last_param-1])
 end
