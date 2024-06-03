@@ -8,6 +8,7 @@ test_nokw(a::Float64, b::Tuple{<:T,<:Real}) where T <: AbstractString = "1vp_0k"
 test_nokw(a::Bool, b::Tuple{<:Real,U}) where U = "1vp_0k"
 test_nokw(a::Unsigned, b::Tuple{<:Real,U,<:V}) where {U, V<:AbstractFloat} = "1vp_0k"
 test_nokw(a::Signed, b...) = "1vp_1va_0k"
+test_nokw(a::Union{Vector{<:Complex},Vector{<:AbstractString}}) = "1u"
 
 test_kw()  = "0_0k"
 test_kw(a) = "1_0k"
@@ -20,6 +21,7 @@ test_kw(a::Complex; c::Int=30, d...) = "1t_1tk_1kv"
 test_kw(a::Symbol; c::Int=30, d::Float64=1., e::AbstractString="", f::Symbol=:a, g::Bool=false, h::Bool=true) = "1t_6k"
 test_kw(a::Rational; c::Int=30, d::Float64=1., e::AbstractString="", f::Symbol=:a, g::Bool=false, h::Bool=true, i::Val{T}=Val(:foo), j::J) where {T, J<:AbstractString} = "1t_6k_2p"
 test_kw(a::Signed, b::Signed, c...; d::Int=30, e...) = "1t_1v_1tk"
+test_kw(a::Unsigned; d::Union{Vector{<:Real},Vector{<:AbstractString}}) = "1t_1uk"
 
 test_opt_kw(a::Complex, b::Complex, c::Symbol = :c; d::Int=30, e::Float64=1., f::AbstractString="", g::Symbol=:a, h::Bool=false) = "2t_1o_5k"
 
@@ -84,6 +86,8 @@ end
 
     @test kwarg_names(methods(test_kw, (Signed,Signed,))) == Symbol[:d, :e]
 
+    @test kwarg_names(methods(test_kw, (Unsigned,))) == Symbol[:d]
+
     @test kwarg_names(methods(test_ta_kw)) == [:a, :b]
 end
 
@@ -102,6 +106,8 @@ end
     else
         @test all(Type[Int, Base.Pairs] .>: kwarg_types(methods(test_kw, (Signed,Signed,))))
     end
+
+    @test Type[Union{Vector{Real},Vector{AbstractString}}] == kwarg_types(methods(test_kw, (Unsigned,)))
 
     @test Type[Vector{Real}, Tuple{Real, Integer, AbstractString}] == kwarg_types(methods(test_ta_kw))
 end
@@ -126,6 +132,8 @@ end
 
     @test Type[Signed, Any] == arg_types(methods(test_nokw, (Signed,)))
 
+    @test Type[Union{Vector{Complex{Real}},Vector{AbstractString}}] == arg_types(methods(test_nokw, (Vector{Complex},)))
+
     @test Type[] == arg_types(methods(test_ta_kw))
 end
 
@@ -145,6 +153,8 @@ end
     @test [:a, :b,] == arg_names(methodswith(Float64, test_nokw))
     @test [:a, :b,] == arg_names(methodswith(Bool, test_nokw))
     @test [:a, :b,] == arg_names(methodswith(Unsigned, test_nokw))
+
+    @test [:a] == arg_names(methods(test_nokw, (Vector{Complex},)))
 
     @test Symbol[] == arg_names(methods(test_ta_kw))
 end

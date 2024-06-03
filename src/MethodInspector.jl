@@ -151,16 +151,24 @@ arg_types(mts::Union{Vector{Method},Base.MethodList}) = arg_types(first(mts))
 """
 Unwrap a `TypeVar` into its upper type
 """
-unwrap_typevar(x) = x
-unwrap_typevar(x::TypeVar) = unwrap_typevar(x.ub)
+unwrap_typevar(x::TypeVar) = unwrap_all(x.ub)
+
+"""
+Unwrap the components of a `Union` type to non-parametrized types
+"""
+unwrap_union(x::Union) = Union{unwrap_all(x.a), unwrap_all(x.b)}
+
+"""
+Generic method to call the appropriate unwrapper for the given type
+"""
+unwrap_all(x)           = x
+unwrap_all(x::DataType) = (x = Base.unwrapva(x); isempty(x.parameters) ? x : x.name.wrapper{map(unwrap_all, x.parameters)...})
+unwrap_all(x::Union)    = unwrap_union(x)
+unwrap_all(x::TypeVar)  = unwrap_all(unwrap_typevar(x))
+unwrap_all(x::UnionAll) = unwrap_all(Base.unwrap_unionall(x))
 
 
-function _params2vec(params::Core.SimpleVector)
-    convert(Vector{Type}, map(params) do p
-        p = unwrap_typevar(Base.unwrapva(Base.unwrap_unionall(p)))
-
-        return isempty(p.parameters) ? p : p.name.wrapper{map(unwrap_typevar, p.parameters)...}
-    end)
-end
+# Internal method to convert its parameters to a Vector{Type}
+_params2vec(params::Core.SimpleVector) = convert(Vector{Type}, map(unwrap_all, params))
 
 end
