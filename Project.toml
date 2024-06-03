@@ -1,7 +1,7 @@
 name = "MethodInspector"
 uuid = "b1dd13ee-3653-43d9-9a5b-1245bfcfc883"
 authors = ["Philip Tellis <philip.tellis@gmail.com>"]
-version = "0.3.0"
+version = "0.3.1"
 
 [compat]
 julia = "1.6"
