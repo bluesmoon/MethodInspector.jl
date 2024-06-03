@@ -161,7 +161,7 @@ unwrap_union(x::Union) = Union{unwrap_all(x.a), unwrap_all(x.b)}
 """
 Generic method to call the appropriate unwrapper for the given type
 """
-unwrap_all(x)           = x
+unwrap_all(x)           = Base.unwrapva(x)
 unwrap_all(x::DataType) = (x = Base.unwrapva(x); isempty(x.parameters) ? x : x.name.wrapper{map(unwrap_all, x.parameters)...})
 unwrap_all(x::Union)    = unwrap_union(x)
 unwrap_all(x::TypeVar)  = unwrap_all(unwrap_typevar(x))
